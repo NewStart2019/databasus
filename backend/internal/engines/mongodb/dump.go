@@ -15,6 +15,10 @@ type DumpSpec struct {
 	ExcludeCollections []string
 	// ParallelCollections above 1 dumps that many collections at once, capped at 16.
 	ParallelCollections int
+	// IsSkipGzip leaves the archive uncompressed.
+	IsSkipGzip bool
+	// IsReadFromSecondary reads the data from secondary nodes.
+	IsReadFromSecondary bool
 	Logger              *slog.Logger
 }
 
@@ -50,7 +54,15 @@ func (s *Source) Dump(ctx context.Context, spec DumpSpec, output io.Writer) erro
 }
 
 func (s *Source) buildDumpArgs(spec DumpSpec) []string {
-	args := []string{uriArgPrefix + s.settings.BuildConnectionURI(), "--archive", "--gzip"}
+	args := []string{uriArgPrefix + s.settings.BuildConnectionURI(), "--archive"}
+
+	if !spec.IsSkipGzip {
+		args = append(args, "--gzip")
+	}
+
+	if spec.IsReadFromSecondary {
+		args = append(args, "--readPreference=secondaryPreferred")
+	}
 
 	for _, excludedCollection := range namelist.NormalizeUniqueNames(spec.ExcludeCollections) {
 		args = append(args, "--excludeCollection="+excludedCollection)

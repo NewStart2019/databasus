@@ -433,6 +433,7 @@ export const fr: typeof en = {
       directConnection: 'Connexion directe',
       authDatabase: "Base d'authentification",
       excludeCollections: 'Collections exclues',
+      dumpOptions: 'Paramètres de sauvegarde',
     },
     edit: {
       parseFromClipboard: 'Remplir depuis le presse-papiers',
@@ -500,6 +501,17 @@ export const fr: typeof en = {
         skipGaleraDisableTooltip:
           "Par défaut, Databasus exécute SET SESSION wsrep_on=OFF pendant la restauration pour éviter les erreurs de taille de writeset Galera. Cela demande le privilège SUPER. Activez cette option pour sauter cette étape si votre fournisseur managé refuse SUPER : les grosses restaurations risquent alors d'atteindre les limites de writeset de Galera.",
       },
+      mysql: {
+        skipEvents: 'Ignorer les événements (--skip-events)',
+        skipEventsTooltip:
+          "Ne pas sauvegarder les événements planifiés. Activez cette option pour les serveurs compatibles MySQL qui ne prennent pas en charge SHOW EVENTS, comme OceanBase.",
+        skipRoutines: 'Ignorer les routines (--skip-routines)',
+        skipRoutinesTooltip:
+          'Ne pas sauvegarder les procédures stockées et les fonctions. Activez cette option quand le serveur refuse les requêtes de métadonnées des routines.',
+        skipTriggers: 'Ignorer les déclencheurs (--skip-triggers)',
+        skipTriggersTooltip:
+          "Ne pas sauvegarder les déclencheurs. Activez cette option quand le rôle de sauvegarde n'a pas le privilège TRIGGER ou que le serveur refuse SHOW TRIGGERS.",
+      },
       mongodb: {
         srvTooltip:
           "Activez cette option pour les connexions SRV de MongoDB Atlas (mongodb+srv://). Le port n'est pas nécessaire pour une connexion SRV.",
@@ -512,6 +524,13 @@ export const fr: typeof en = {
         excludeCollectionsPlaceholder: 'Aucune collection exclue',
         excludeCollectionsTooltip:
           'Noms des collections à exclure de la sauvegarde. Vous pouvez coller une liste séparée par des virgules ou des retours à la ligne.',
+        skipGzip: 'Ignorer la compression gzip (sans --gzip)',
+        skipGzipTooltip:
+          "Laisser l'archive non compressée. La sauvegarde est plus rapide et utilise moins de CPU, mais occupe plus d'espace.",
+        readFromSecondary:
+          'Lire depuis les nœuds secondaires (--readPreference=secondaryPreferred)',
+        readFromSecondaryTooltip:
+          "Lire les données depuis les nœuds secondaires pour ne pas charger le primaire. Requiert un replica set.",
       },
     },
     show: {

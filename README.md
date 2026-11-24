@@ -15,6 +15,7 @@
   [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey)](https://github.com/databasus/databasus)
   [![Self Hosted](https://img.shields.io/badge/self--hosted-yes-brightgreen)](https://github.com/databasus/databasus)
   [![Open Source](https://img.shields.io/badge/open%20source-❤️-red)](https://github.com/databasus/databasus)
+  [![swgger-url](https://img.shields.io/badge/open%20source-❤️-red)](http://127.0.0.1:4005/api/v1/docs/swagger/index.html)
 
   <p>
     <b>English</b> •

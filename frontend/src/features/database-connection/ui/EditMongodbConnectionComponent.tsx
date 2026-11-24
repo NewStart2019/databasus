@@ -1,4 +1,4 @@
-import { NumberInput, Switch, TagsInput, TextInput } from '@mantine/core';
+import { Checkbox, NumberInput, Switch, TagsInput, TextInput } from '@mantine/core';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -21,12 +21,23 @@ import { EditSshTunnelComponent } from '@/features/database-connection/ui/EditSs
 import { NAME_LIST_TOKEN_SEPARATORS, normalizeNameList } from '@/shared/lib';
 import { AdvancedSettingsToggleComponent } from '@/shared/ui';
 
+type MongodbDumpOptionKey = 'isSkipGzip' | 'isReadFromSecondary';
+
+interface MongodbDumpOption {
+  key: MongodbDumpOptionKey;
+  label: string;
+  tooltip: string;
+}
+
 const hasAdvancedValues = (settings: MongodbSettings, isRestore: boolean): boolean =>
   !!settings.authDatabase ||
   !!settings.isSrv ||
   !!settings.isDirectConnection ||
   !!settings.sshTunnel?.isEnabled ||
-  (!isRestore && !!settings.excludeCollections?.length);
+  (!isRestore &&
+    (!!settings.excludeCollections?.length ||
+      !!settings.isSkipGzip ||
+      !!settings.isReadFromSecondary));
 
 export const EditMongodbConnectionComponent = ({
   scenario,
@@ -243,6 +254,41 @@ export const EditMongodbConnectionComponent = ({
                 />
               </div>
             </ConnectionFieldRow>
+          )}
+
+          {!isRestore && (
+            <div className="mb-2">
+              <div className="mb-1 font-medium">{t('databases.fields.dumpOptions')}</div>
+
+              {([
+                {
+                  key: 'isSkipGzip',
+                  label: t('databases.edit.mongodb.skipGzip'),
+                  tooltip: t('databases.edit.mongodb.skipGzipTooltip'),
+                },
+                {
+                  key: 'isReadFromSecondary',
+                  label: t('databases.edit.mongodb.readFromSecondary'),
+                  tooltip: t('databases.edit.mongodb.readFromSecondaryTooltip'),
+                },
+              ] satisfies MongodbDumpOption[]).map((option) => (
+                <div key={option.key} className="mb-1 flex items-center">
+                  <Checkbox
+                    id={`${controlId}-${option.key}`}
+                    checked={settings[option.key] || false}
+                    onChange={(event) =>
+                      onNonConnectionChange({
+                        ...settings,
+                        [option.key]: event.currentTarget.checked,
+                      })
+                    }
+                    label={<>{option.label}</>}
+                  />
+
+                  <ConnectionFieldTooltip title={option.tooltip} />
+                </div>
+              ))}
+            </div>
           )}
         </>
       )}

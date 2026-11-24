@@ -58,6 +58,27 @@ export const ShowMySqlSpecificDataComponent = ({ settings }: Props) => {
           <div>{settings.excludeTables.join(', ')}</div>
         </div>
       )}
+
+      {settings.isSkipEvents && (
+        <div className="mb-1 flex w-full items-center">
+          <div className="min-w-[150px] pr-2">{t('databases.fields.dumpOptions')}</div>
+          <div>{t('databases.edit.mysql.skipEvents')}</div>
+        </div>
+      )}
+
+      {settings.isSkipRoutines && (
+        <div className="mb-1 flex w-full items-center">
+          <div className="min-w-[150px] pr-2">{t('databases.fields.dumpOptions')}</div>
+          <div>{t('databases.edit.mysql.skipRoutines')}</div>
+        </div>
+      )}
+
+      {settings.isSkipTriggers && (
+        <div className="mb-1 flex w-full items-center">
+          <div className="min-w-[150px] pr-2">{t('databases.fields.dumpOptions')}</div>
+          <div>{t('databases.edit.mysql.skipTriggers')}</div>
+        </div>
+      )}
     </div>
   );
 };

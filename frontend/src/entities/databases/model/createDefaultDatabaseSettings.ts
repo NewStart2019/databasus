@@ -44,6 +44,9 @@ const DEFAULT_SETTINGS_BUILDERS: { [Type in DatabaseType]: () => SettingsOfType<
     database: '',
     isHttps: false,
     excludeTables: [],
+    isSkipEvents: false,
+    isSkipRoutines: false,
+    isSkipTriggers: false,
   }),
   MARIADB: () => ({
     ...createConnection(),
@@ -66,6 +69,8 @@ const DEFAULT_SETTINGS_BUILDERS: { [Type in DatabaseType]: () => SettingsOfType<
     isDirectConnection: false,
     cpuCount: 1,
     excludeCollections: [],
+    isSkipGzip: false,
+    isReadFromSecondary: false,
   }),
 };
 

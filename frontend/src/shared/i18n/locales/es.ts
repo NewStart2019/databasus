@@ -436,6 +436,7 @@ export const es: typeof en = {
       directConnection: 'Conexión directa',
       authDatabase: 'Base de datos de autenticación',
       excludeCollections: 'Excluir colecciones',
+      dumpOptions: 'Parámetros de copia de seguridad',
     },
     edit: {
       parseFromClipboard: 'Rellenar desde el portapapeles',
@@ -502,6 +503,17 @@ export const es: typeof en = {
         skipGaleraDisableTooltip:
           'Por defecto, Databasus ejecuta SET SESSION wsrep_on=OFF durante la restauración para evitar errores de tamaño de writeset en Galera. Esto requiere el privilegio SUPER. Active esta opción para saltarse ese paso si su proveedor gestionado no concede SUPER; en ese caso, las restauraciones grandes pueden toparse con los límites de writeset de Galera.',
       },
+      mysql: {
+        skipEvents: 'Omitir eventos (--skip-events)',
+        skipEventsTooltip:
+          'No incluye los eventos programados en la copia de seguridad. Active esta opción para servidores compatibles con MySQL que no admiten SHOW EVENTS, como OceanBase.',
+        skipRoutines: 'Omitir rutinas (--skip-routines)',
+        skipRoutinesTooltip:
+          'No incluye los procedimientos almacenados ni las funciones. Active esta opción cuando el servidor rechaza las consultas de metadatos de las rutinas.',
+        skipTriggers: 'Omitir disparadores (--skip-triggers)',
+        skipTriggersTooltip:
+          'No incluye los disparadores. Active esta opción cuando el rol de copia de seguridad carece del privilegio TRIGGER o el servidor rechaza SHOW TRIGGERS.',
+      },
       mongodb: {
         srvTooltip:
           'Active esta opción para las conexiones SRV de MongoDB Atlas (mongodb+srv://). Las conexiones SRV no necesitan puerto.',
@@ -514,6 +526,13 @@ export const es: typeof en = {
         excludeCollectionsPlaceholder: 'Ninguna colección excluida',
         excludeCollectionsTooltip:
           'Colecciones que no se incluirán en la copia de seguridad. Puede pegar una lista separada por comas o por saltos de línea.',
+        skipGzip: 'Omitir la compresión gzip (sin --gzip)',
+        skipGzipTooltip:
+          'Dejar el archivo sin comprimir. La copia de seguridad es más rápida y usa menos CPU, pero ocupa más almacenamiento.',
+        readFromSecondary:
+          'Leer desde nodos secundarios (--readPreference=secondaryPreferred)',
+        readFromSecondaryTooltip:
+          'Leer los datos desde los nodos secundarios para no cargar el nodo primario. Requiere un replica set.',
       },
     },
     show: {

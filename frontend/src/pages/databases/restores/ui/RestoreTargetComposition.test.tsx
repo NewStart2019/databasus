@@ -44,6 +44,9 @@ const backedUpDatabase: Database = {
     isHttps: false,
     sshTunnel: { isEnabled: false },
     excludeTables: [],
+    isSkipEvents: false,
+    isSkipRoutines: false,
+    isSkipTriggers: false,
   },
   notifierIds: [],
 };

@@ -423,6 +423,7 @@ export const ru: typeof en = {
       directConnection: 'Прямое подключение',
       authDatabase: 'База аутентификации',
       excludeCollections: 'Исключаемые коллекции',
+      dumpOptions: 'Параметры резервного копирования',
     },
     edit: {
       parseFromClipboard: 'Заполнить из буфера обмена',
@@ -489,6 +490,17 @@ export const ru: typeof en = {
         skipGaleraDisableTooltip:
           'По умолчанию при восстановлении Databasus выполняет SET SESSION wsrep_on=OFF, чтобы избежать ошибок размера writeset в Galera. Для этого нужна привилегия SUPER. Включите, если провайдер управляемой базы данных не выдает привилегию SUPER. Но тогда восстановление больших бекапов может упереться в лимиты writeset Galera.',
       },
+      mysql: {
+        skipEvents: 'Пропускать события (--skip-events)',
+        skipEventsTooltip:
+          'Не включать запланированные события в бекап. Включите для совместимых с MySQL серверов, которые не поддерживают SHOW EVENTS, например OceanBase.',
+        skipRoutines: 'Пропускать процедуры и функции (--skip-routines)',
+        skipRoutinesTooltip:
+          'Не включать хранимые процедуры и функции в бекап. Включите, когда сервер отклоняет запросы метаданных процедур.',
+        skipTriggers: 'Пропускать триггеры (--skip-triggers)',
+        skipTriggersTooltip:
+          'Не включать триггеры в бекап. Включите, когда у роли бекапа нет привилегии TRIGGER или сервер отклоняет SHOW TRIGGERS.',
+      },
       mongodb: {
         srvTooltip:
           'Включите для SRV-подключений MongoDB Atlas (mongodb+srv://). Для SRV-подключения порт не нужен.',
@@ -501,6 +513,13 @@ export const ru: typeof en = {
         excludeCollectionsPlaceholder: 'Коллекции не исключены',
         excludeCollectionsTooltip:
           'Коллекции, которые не попадут в бекап. Можно вставить список через запятую или с новой строки.',
+        skipGzip: 'Пропускать сжатие gzip (без --gzip)',
+        skipGzipTooltip:
+          'Оставить архив несжатым. Бекап выполняется быстрее и потребляет меньше CPU, но занимает больше места.',
+        readFromSecondary:
+          'Читать с вторичных узлов (--readPreference=secondaryPreferred)',
+        readFromSecondaryTooltip:
+          'Читать данные со вторичных узлов, чтобы не нагружать первичный узел. Требуется replica set.',
       },
     },
     show: {

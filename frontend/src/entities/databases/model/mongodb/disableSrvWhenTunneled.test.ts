@@ -33,6 +33,8 @@ const srvDatabase = (
   cpuCount: 1,
   sshTunnel,
   excludeCollections: [],
+  isSkipGzip: false,
+  isReadFromSecondary: false,
 });
 
 describe('disableSrvWhenTunneled', () => {

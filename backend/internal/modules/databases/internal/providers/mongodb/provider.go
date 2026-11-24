@@ -158,11 +158,13 @@ func (p *Provider) GetConnectionSettings(
 	}
 
 	return providers.MongodbConnectionSettings{
-		DatabaseID:         databaseID,
-		Engine:             engineSettings,
-		Version:            mongodbSettings.Version,
-		ExcludeCollections: slices.Clone(mongodbSettings.ExcludeCollections),
-		CPUCount:           mongodbSettings.CPUCount,
+		DatabaseID:          databaseID,
+		Engine:              engineSettings,
+		Version:             mongodbSettings.Version,
+		ExcludeCollections:  slices.Clone(mongodbSettings.ExcludeCollections),
+		CPUCount:            mongodbSettings.CPUCount,
+		IsSkipGzip:          mongodbSettings.IsSkipGzip,
+		IsReadFromSecondary: mongodbSettings.IsReadFromSecondary,
 	}, nil
 }
 

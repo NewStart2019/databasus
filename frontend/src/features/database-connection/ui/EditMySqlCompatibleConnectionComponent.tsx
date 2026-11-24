@@ -23,6 +23,14 @@ import { AdvancedSettingsToggleComponent } from '@/shared/ui';
 
 type Settings = MysqlSettings | MariadbSettings;
 
+type MysqlDumpOptionKey = 'isSkipEvents' | 'isSkipRoutines' | 'isSkipTriggers';
+
+interface MysqlDumpOption {
+  key: MysqlDumpOptionKey;
+  label: string;
+  tooltip: string;
+}
+
 const hasAdvancedValues = (settings: Settings, isRestore: boolean): boolean => {
   if (settings.sshTunnel?.isEnabled) return true;
   if (settings.type === DatabaseType.MARIADB && settings.isSkipGaleraDisable) return true;
@@ -30,7 +38,9 @@ const hasAdvancedValues = (settings: Settings, isRestore: boolean): boolean => {
 
   return (
     !!settings.excludeTables?.length ||
-    (settings.type === DatabaseType.MARIADB && !!settings.isExcludeEvents)
+    (settings.type === DatabaseType.MARIADB && !!settings.isExcludeEvents) ||
+    (settings.type === DatabaseType.MYSQL &&
+      (!!settings.isSkipEvents || !!settings.isSkipRoutines || !!settings.isSkipTriggers))
   );
 };
 
@@ -130,6 +140,46 @@ export const EditMySqlCompatibleConnectionComponent = ({
                 <ConnectionFieldTooltip title={t('databases.edit.excludeTablesTooltip')} />
               </div>
             </ConnectionFieldRow>
+          )}
+
+          {settings.type === DatabaseType.MYSQL && !isRestore && (
+            <div className="mb-2">
+              <div className="mb-1 font-medium">{t('databases.fields.dumpOptions')}</div>
+
+              {([
+                {
+                  key: 'isSkipEvents',
+                  label: t('databases.edit.mysql.skipEvents'),
+                  tooltip: t('databases.edit.mysql.skipEventsTooltip'),
+                },
+                {
+                  key: 'isSkipRoutines',
+                  label: t('databases.edit.mysql.skipRoutines'),
+                  tooltip: t('databases.edit.mysql.skipRoutinesTooltip'),
+                },
+                {
+                  key: 'isSkipTriggers',
+                  label: t('databases.edit.mysql.skipTriggers'),
+                  tooltip: t('databases.edit.mysql.skipTriggersTooltip'),
+                },
+              ] satisfies MysqlDumpOption[]).map((option) => (
+                <div key={option.key} className="mb-1 flex items-center">
+                  <Checkbox
+                    id={`${controlId}-${option.key}`}
+                    checked={settings[option.key] || false}
+                    onChange={(event) =>
+                      onNonConnectionChange({
+                        ...settings,
+                        [option.key]: event.currentTarget.checked,
+                      })
+                    }
+                    label={<>{option.label}</>}
+                  />
+
+                  <ConnectionFieldTooltip title={option.tooltip} />
+                </div>
+              ))}
+            </div>
           )}
 
           {settings.type === DatabaseType.MARIADB && !isRestore && (

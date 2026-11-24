@@ -24,6 +24,10 @@ type Settings struct {
 	CPUCount           int
 	SSHTunnel          providers.SSHTunnelSettings
 	ExcludeCollections []string
+	// IsSkipGzip keeps mongodump from gzip-compressing the archive.
+	IsSkipGzip bool
+	// IsReadFromSecondary makes mongodump read from secondary nodes.
+	IsReadFromSecondary bool
 }
 
 func (Settings) GetType() providers.Type {

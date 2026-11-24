@@ -422,6 +422,7 @@ export const en = {
       directConnection: 'Direct connection',
       authDatabase: 'Auth database',
       excludeCollections: 'Exclude collections',
+      dumpOptions: 'Backup parameters',
     },
     edit: {
       parseFromClipboard: 'Parse from clipboard',
@@ -488,6 +489,17 @@ export const en = {
         skipGaleraDisableTooltip:
           'By default Databasus runs SET SESSION wsrep_on=OFF during restore to avoid Galera writeset-size errors. That requires the SUPER privilege. Enable this to skip it if your managed provider denies SUPER - large restores may then hit Galera writeset limits.',
       },
+      mysql: {
+        skipEvents: 'Skip events (--skip-events)',
+        skipEventsTooltip:
+          'Do not dump scheduled events. Enable this for MySQL-compatible servers that do not support SHOW EVENTS, such as OceanBase.',
+        skipRoutines: 'Skip routines (--skip-routines)',
+        skipRoutinesTooltip:
+          'Do not dump stored procedures and functions. Enable this when the server rejects the routine metadata queries.',
+        skipTriggers: 'Skip triggers (--skip-triggers)',
+        skipTriggersTooltip:
+          'Do not dump triggers. Enable this when the backup role lacks the TRIGGER privilege or the server rejects SHOW TRIGGERS.',
+      },
       mongodb: {
         srvTooltip:
           'Enable for MongoDB Atlas SRV connections (mongodb+srv://). Port is not required for SRV connections.',
@@ -500,6 +512,12 @@ export const en = {
         excludeCollectionsPlaceholder: 'No collections excluded',
         excludeCollectionsTooltip:
           'Collection names to exclude from the backup. You can paste a list separated by commas or new lines.',
+        skipGzip: 'Skip gzip compression (--gzip off)',
+        skipGzipTooltip:
+          'Leave the archive uncompressed. The backup runs faster and uses less CPU, but takes more storage.',
+        readFromSecondary: 'Read from secondary nodes (--readPreference=secondaryPreferred)',
+        readFromSecondaryTooltip:
+          'Read the data from secondary nodes so the backup does not load the primary. Requires a replica set.',
       },
     },
     show: {

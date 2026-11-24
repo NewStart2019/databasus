@@ -37,17 +37,19 @@ type settingsRow struct {
 	Version    mongodbengine.Version `gorm:"column:version"`
 	Host       string                `gorm:"column:host"`
 	// Port is NULL for an SRV connection.
-	Port               *int                       `gorm:"column:port"`
-	Username           string                     `gorm:"column:username"`
-	Password           string                     `gorm:"column:password"`
-	Database           string                     `gorm:"column:database"`
-	AuthDatabase       string                     `gorm:"column:auth_database"`
-	IsHTTPS            bool                       `gorm:"column:is_https"`
-	IsSrv              bool                       `gorm:"column:is_srv"`
-	IsDirectConnection bool                       `gorm:"column:is_direct_connection"`
-	CPUCount           int                        `gorm:"column:cpu_count"`
-	SSHTunnel          providers.SSHTunnelColumns `gorm:"embedded;embeddedPrefix:ssh_"`
-	ExcludeCollections pq.StringArray             `gorm:"column:exclude_collections;type:text[]"`
+	Port                *int                       `gorm:"column:port"`
+	Username            string                     `gorm:"column:username"`
+	Password            string                     `gorm:"column:password"`
+	Database            string                     `gorm:"column:database"`
+	AuthDatabase        string                     `gorm:"column:auth_database"`
+	IsHTTPS             bool                       `gorm:"column:is_https"`
+	IsSrv               bool                       `gorm:"column:is_srv"`
+	IsDirectConnection  bool                       `gorm:"column:is_direct_connection"`
+	CPUCount            int                        `gorm:"column:cpu_count"`
+	SSHTunnel           providers.SSHTunnelColumns `gorm:"embedded;embeddedPrefix:ssh_"`
+	ExcludeCollections  pq.StringArray             `gorm:"column:exclude_collections;type:text[]"`
+	IsSkipGzip          bool                       `gorm:"column:is_skip_gzip"`
+	IsReadFromSecondary bool                       `gorm:"column:is_read_from_secondary"`
 }
 
 func (settingsRow) TableName() string {
@@ -76,20 +78,22 @@ func (r *settingsRepository) Upsert(ctx context.Context, databaseID uuid.UUID, s
 	}
 
 	row := settingsRow{
-		DatabaseID:         databaseID,
-		Version:            mongodbSettings.Version,
-		Host:               mongodbSettings.Host,
-		Port:               port,
-		Username:           mongodbSettings.Username,
-		Password:           encryptedPassword,
-		Database:           mongodbSettings.Database,
-		AuthDatabase:       mongodbSettings.AuthDatabase,
-		IsHTTPS:            mongodbSettings.IsHTTPS,
-		IsSrv:              mongodbSettings.IsSrv,
-		IsDirectConnection: mongodbSettings.IsDirectConnection,
-		CPUCount:           mongodbSettings.CPUCount,
-		SSHTunnel:          sshTunnelColumns,
-		ExcludeCollections: namelist.NormalizeUniqueNames(mongodbSettings.ExcludeCollections),
+		DatabaseID:          databaseID,
+		Version:             mongodbSettings.Version,
+		Host:                mongodbSettings.Host,
+		Port:                port,
+		Username:            mongodbSettings.Username,
+		Password:            encryptedPassword,
+		Database:            mongodbSettings.Database,
+		AuthDatabase:        mongodbSettings.AuthDatabase,
+		IsHTTPS:             mongodbSettings.IsHTTPS,
+		IsSrv:               mongodbSettings.IsSrv,
+		IsDirectConnection:  mongodbSettings.IsDirectConnection,
+		CPUCount:            mongodbSettings.CPUCount,
+		SSHTunnel:           sshTunnelColumns,
+		ExcludeCollections:  namelist.NormalizeUniqueNames(mongodbSettings.ExcludeCollections),
+		IsSkipGzip:          mongodbSettings.IsSkipGzip,
+		IsReadFromSecondary: mongodbSettings.IsReadFromSecondary,
 	}
 
 	err = database.Conn(ctx, r.db).
@@ -122,19 +126,21 @@ func (r *settingsRepository) ListByDatabaseIDs(
 		}
 
 		settingsByDatabaseID[row.DatabaseID] = Settings{
-			Version:            row.Version,
-			Host:               row.Host,
-			Port:               port,
-			Username:           row.Username,
-			Password:           row.Password,
-			Database:           row.Database,
-			AuthDatabase:       row.AuthDatabase,
-			IsHTTPS:            row.IsHTTPS,
-			IsSrv:              row.IsSrv,
-			IsDirectConnection: row.IsDirectConnection,
-			CPUCount:           row.CPUCount,
-			SSHTunnel:          row.SSHTunnel.ToSettings(),
-			ExcludeCollections: row.ExcludeCollections,
+			Version:             row.Version,
+			Host:                row.Host,
+			Port:                port,
+			Username:            row.Username,
+			Password:            row.Password,
+			Database:            row.Database,
+			AuthDatabase:        row.AuthDatabase,
+			IsHTTPS:             row.IsHTTPS,
+			IsSrv:               row.IsSrv,
+			IsDirectConnection:  row.IsDirectConnection,
+			CPUCount:            row.CPUCount,
+			SSHTunnel:           row.SSHTunnel.ToSettings(),
+			ExcludeCollections:  row.ExcludeCollections,
+			IsSkipGzip:          row.IsSkipGzip,
+			IsReadFromSecondary: row.IsReadFromSecondary,
 		}
 	}
 

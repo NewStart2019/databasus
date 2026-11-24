@@ -68,6 +68,20 @@ export const ShowMongoDbSpecificDataComponent = ({ settings }: Props) => {
           <div>{settings.excludeCollections.join(', ')}</div>
         </div>
       )}
+
+      {settings.isSkipGzip && (
+        <div className="mb-1 flex w-full items-center">
+          <div className="min-w-[150px] pr-2">{t('databases.fields.dumpOptions')}</div>
+          <div>{t('databases.edit.mongodb.skipGzip')}</div>
+        </div>
+      )}
+
+      {settings.isReadFromSecondary && (
+        <div className="mb-1 flex w-full items-center">
+          <div className="min-w-[150px] pr-2">{t('databases.fields.dumpOptions')}</div>
+          <div>{t('databases.edit.mongodb.readFromSecondary')}</div>
+        </div>
+      )}
     </div>
   );
 };

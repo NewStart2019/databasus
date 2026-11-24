@@ -114,6 +114,8 @@ func openMongodbDumpSource(
 			ClientTools:         clientTools,
 			ExcludeCollections:  connectionSettings.ExcludeCollections,
 			ParallelCollections: connectionSettings.CPUCount,
+			IsSkipGzip:          connectionSettings.IsSkipGzip,
+			IsReadFromSecondary: connectionSettings.IsReadFromSecondary,
 			Logger:              logger,
 		},
 		logger: logger,

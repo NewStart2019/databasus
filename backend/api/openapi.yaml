@@ -5211,7 +5211,7 @@ components:
     MysqlSettings:
       type: object
       description: One MySQL database backed up with mysqldump
-      required: [type, host, port, username, isHttps, sshTunnel, excludeTables]
+      required: [type, host, port, username, isHttps, sshTunnel, excludeTables, isSkipEvents, isSkipRoutines, isSkipTriggers]
       properties:
         type:
           type: string
@@ -5247,6 +5247,15 @@ components:
           items:
             type: string
           description: The tables the dump leaves out
+        isSkipEvents:
+          type: boolean
+          description: Whether the dump skips the scheduled events
+        isSkipRoutines:
+          type: boolean
+          description: Whether the dump skips stored procedures and functions
+        isSkipTriggers:
+          type: boolean
+          description: Whether the dump skips triggers
         privileges:
           type: array
           readOnly: true
@@ -5331,6 +5340,8 @@ components:
         - cpuCount
         - sshTunnel
         - excludeCollections
+        - isSkipGzip
+        - isReadFromSecondary
       properties:
         type:
           type: string
@@ -5379,6 +5390,12 @@ components:
           items:
             type: string
           description: The collections the dump leaves out
+        isSkipGzip:
+          type: boolean
+          description: Whether the archive is left uncompressed
+        isReadFromSecondary:
+          type: boolean
+          description: Whether the dump reads from secondary nodes
     AgentArchitecture:
       type: string
       description: A processor architecture used by installed agents

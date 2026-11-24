@@ -403,6 +403,7 @@ export const zh: typeof en = {
       directConnection: '直接连接',
       authDatabase: '认证数据库',
       excludeCollections: '排除的集合',
+      dumpOptions: '备份参数',
     },
     edit: {
       parseFromClipboard: '从剪贴板解析',
@@ -465,6 +466,17 @@ export const zh: typeof en = {
         skipGaleraDisableTooltip:
           '默认情况下，Databasus 在恢复时执行 SET SESSION wsrep_on=OFF，以避免 Galera writeset 大小错误。这需要 SUPER 权限。如果托管服务商不授予 SUPER 权限，请开启此项跳过这一步，但大型恢复可能会触及 Galera 的 writeset 限制。',
       },
+      mysql: {
+        skipEvents: '跳过事件（--skip-events）',
+        skipEventsTooltip:
+          '不备份定时事件。连接不支持 SHOW EVENTS 的 MySQL 兼容数据库（如 OceanBase）时开启。',
+        skipRoutines: '跳过存储过程和函数（--skip-routines）',
+        skipRoutinesTooltip:
+          '不备份存储过程和函数。服务器拒绝例程元数据查询时开启。',
+        skipTriggers: '跳过触发器（--skip-triggers）',
+        skipTriggersTooltip:
+          '不备份触发器。备份账号缺少 TRIGGER 权限或服务器拒绝 SHOW TRIGGERS 时开启。',
+      },
       mongodb: {
         srvTooltip: '连接 MongoDB Atlas 的 SRV 地址（mongodb+srv://）时开启。SRV 连接不需要端口。',
         srvOverTunnelTooltip: '通过 SSH 隧道连接时不可用：SRV 会自行解析主机列表，绕过转发的端口。',
@@ -474,6 +486,12 @@ export const zh: typeof en = {
           '启用 SSH 隧道时强制开启：隧道只暴露一个地址，因此无法使用副本集发现。',
         excludeCollectionsPlaceholder: '未排除任何集合',
         excludeCollectionsTooltip: '不纳入备份的集合名。可以粘贴以逗号或换行分隔的列表。',
+        skipGzip: '跳过 gzip 压缩（关闭 --gzip）',
+        skipGzipTooltip:
+          '归档不做 gzip 压缩。备份更快、CPU 占用更低，但占用更多存储空间。',
+        readFromSecondary: '从 secondary 节点读取（--readPreference=secondaryPreferred）',
+        readFromSecondaryTooltip:
+          '从 secondary 节点读取数据，避免备份增加 primary 节点负载。需要副本集。',
       },
     },
     show: {

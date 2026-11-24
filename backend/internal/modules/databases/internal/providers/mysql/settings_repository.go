@@ -33,17 +33,20 @@ func NewRepositories(db *gorm.DB, fieldEncryptor *crypto.FieldEncryptor) Reposit
 }
 
 type settingsRow struct {
-	DatabaseID    uuid.UUID                  `gorm:"column:database_id;primaryKey"`
-	Version       mysqlengine.Version        `gorm:"column:version"`
-	Host          string                     `gorm:"column:host"`
-	Port          int                        `gorm:"column:port"`
-	Username      string                     `gorm:"column:username"`
-	Password      string                     `gorm:"column:password"`
-	Database      *string                    `gorm:"column:database"`
-	IsHTTPS       bool                       `gorm:"column:is_https"`
-	SSHTunnel     providers.SSHTunnelColumns `gorm:"embedded;embeddedPrefix:ssh_"`
-	ExcludeTables pq.StringArray             `gorm:"column:exclude_tables;type:text[]"`
-	Privileges    pq.StringArray             `gorm:"column:privileges;type:text[]"`
+	DatabaseID     uuid.UUID                  `gorm:"column:database_id;primaryKey"`
+	Version        mysqlengine.Version        `gorm:"column:version"`
+	Host           string                     `gorm:"column:host"`
+	Port           int                        `gorm:"column:port"`
+	Username       string                     `gorm:"column:username"`
+	Password       string                     `gorm:"column:password"`
+	Database       *string                    `gorm:"column:database"`
+	IsHTTPS        bool                       `gorm:"column:is_https"`
+	SSHTunnel      providers.SSHTunnelColumns `gorm:"embedded;embeddedPrefix:ssh_"`
+	ExcludeTables  pq.StringArray             `gorm:"column:exclude_tables;type:text[]"`
+	Privileges     pq.StringArray             `gorm:"column:privileges;type:text[]"`
+	IsSkipEvents   bool                       `gorm:"column:is_skip_events"`
+	IsSkipRoutines bool                       `gorm:"column:is_skip_routines"`
+	IsSkipTriggers bool                       `gorm:"column:is_skip_triggers"`
 }
 
 func (settingsRow) TableName() string {
@@ -67,17 +70,20 @@ func (r *settingsRepository) Upsert(ctx context.Context, databaseID uuid.UUID, s
 	}
 
 	row := settingsRow{
-		DatabaseID:    databaseID,
-		Version:       mysqlSettings.Version,
-		Host:          mysqlSettings.Host,
-		Port:          mysqlSettings.Port,
-		Username:      mysqlSettings.Username,
-		Password:      encryptedPassword,
-		Database:      &mysqlSettings.Database,
-		IsHTTPS:       mysqlSettings.IsHTTPS,
-		SSHTunnel:     sshTunnelColumns,
-		ExcludeTables: namelist.NormalizeUniqueNames(mysqlSettings.ExcludeTables),
-		Privileges:    namelist.NormalizeUniqueNames(mysqlSettings.Privileges),
+		DatabaseID:     databaseID,
+		Version:        mysqlSettings.Version,
+		Host:           mysqlSettings.Host,
+		Port:           mysqlSettings.Port,
+		Username:       mysqlSettings.Username,
+		Password:       encryptedPassword,
+		Database:       &mysqlSettings.Database,
+		IsHTTPS:        mysqlSettings.IsHTTPS,
+		SSHTunnel:      sshTunnelColumns,
+		ExcludeTables:  namelist.NormalizeUniqueNames(mysqlSettings.ExcludeTables),
+		Privileges:     namelist.NormalizeUniqueNames(mysqlSettings.Privileges),
+		IsSkipEvents:   mysqlSettings.IsSkipEvents,
+		IsSkipRoutines: mysqlSettings.IsSkipRoutines,
+		IsSkipTriggers: mysqlSettings.IsSkipTriggers,
 	}
 
 	err = database.Conn(ctx, r.db).
@@ -110,16 +116,19 @@ func (r *settingsRepository) ListByDatabaseIDs(
 		}
 
 		settingsByDatabaseID[row.DatabaseID] = Settings{
-			Version:       row.Version,
-			Host:          row.Host,
-			Port:          row.Port,
-			Username:      row.Username,
-			Password:      row.Password,
-			Database:      databaseName,
-			IsHTTPS:       row.IsHTTPS,
-			SSHTunnel:     row.SSHTunnel.ToSettings(),
-			ExcludeTables: row.ExcludeTables,
-			Privileges:    row.Privileges,
+			Version:        row.Version,
+			Host:           row.Host,
+			Port:           row.Port,
+			Username:       row.Username,
+			Password:       row.Password,
+			Database:       databaseName,
+			IsHTTPS:        row.IsHTTPS,
+			SSHTunnel:      row.SSHTunnel.ToSettings(),
+			ExcludeTables:  row.ExcludeTables,
+			Privileges:     row.Privileges,
+			IsSkipEvents:   row.IsSkipEvents,
+			IsSkipRoutines: row.IsSkipRoutines,
+			IsSkipTriggers: row.IsSkipTriggers,
 		}
 	}
 

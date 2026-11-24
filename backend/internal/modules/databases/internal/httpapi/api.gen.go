@@ -693,8 +693,14 @@ type MongodbSettings struct {
 	// IsHttps Whether TLS is on, without verifying the server certificate
 	IsHttps bool `json:"isHttps"`
 
+	// IsReadFromSecondary Whether the dump reads from secondary nodes
+	IsReadFromSecondary bool `json:"isReadFromSecondary"`
+
 	// IsSrv Whether the host is resolved through DNS SRV records
 	IsSrv bool `json:"isSrv"`
+
+	// IsSkipGzip Whether the archive is left uncompressed
+	IsSkipGzip bool `json:"isSkipGzip"`
 
 	// Password The password
 	Password *string `json:"password,omitempty"`
@@ -734,6 +740,15 @@ type MysqlSettings struct {
 
 	// IsHttps Whether the connection is encrypted, without verifying the server certificate
 	IsHttps bool `json:"isHttps"`
+
+	// IsSkipEvents Whether the dump skips the scheduled events
+	IsSkipEvents bool `json:"isSkipEvents"`
+
+	// IsSkipRoutines Whether the dump skips stored procedures and functions
+	IsSkipRoutines bool `json:"isSkipRoutines"`
+
+	// IsSkipTriggers Whether the dump skips triggers
+	IsSkipTriggers bool `json:"isSkipTriggers"`
 
 	// Password The password
 	Password *string `json:"password,omitempty"`

@@ -156,11 +156,14 @@ func (p *Provider) GetConnectionSettings(
 	}
 
 	return providers.MysqlConnectionSettings{
-		DatabaseID:    databaseID,
-		Engine:        engineSettings,
-		Version:       mysqlSettings.Version,
-		ExcludeTables: slices.Clone(mysqlSettings.ExcludeTables),
-		Privileges:    slices.Clone(mysqlSettings.Privileges),
+		DatabaseID:     databaseID,
+		Engine:         engineSettings,
+		Version:        mysqlSettings.Version,
+		ExcludeTables:  slices.Clone(mysqlSettings.ExcludeTables),
+		Privileges:     slices.Clone(mysqlSettings.Privileges),
+		IsSkipEvents:   mysqlSettings.IsSkipEvents,
+		IsSkipRoutines: mysqlSettings.IsSkipRoutines,
+		IsSkipTriggers: mysqlSettings.IsSkipTriggers,
 	}, nil
 }
 

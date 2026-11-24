@@ -429,6 +429,7 @@ export const pt: typeof en = {
       directConnection: 'Conexão direta',
       authDatabase: 'Banco de autenticação',
       excludeCollections: 'Ignorar coleções',
+      dumpOptions: 'Parâmetros de backup',
     },
     edit: {
       parseFromClipboard: 'Preencher da área de transferência',
@@ -496,6 +497,17 @@ export const pt: typeof en = {
         skipGaleraDisableTooltip:
           'Por padrão, o Databasus executa SET SESSION wsrep_on=OFF durante a restauração para evitar erros de tamanho de writeset do Galera. Isso exige o privilégio SUPER. Ative esta opção para pular esse passo se o seu provedor gerenciado não concede SUPER. Nesse caso, restaurações grandes podem esbarrar nos limites de writeset do Galera.',
       },
+      mysql: {
+        skipEvents: 'Pular eventos (--skip-events)',
+        skipEventsTooltip:
+          'Não inclui os eventos agendados no backup. Ative para servidores compatíveis com MySQL que não suportam SHOW EVENTS, como o OceanBase.',
+        skipRoutines: 'Pular rotinas (--skip-routines)',
+        skipRoutinesTooltip:
+          'Não inclui os procedimentos armazenados e as funções no backup. Ative quando o servidor rejeita as consultas de metadados das rotinas.',
+        skipTriggers: 'Pular gatilhos (--skip-triggers)',
+        skipTriggersTooltip:
+          'Não inclui os gatilhos no backup. Ative quando o papel de backup não tem o privilégio TRIGGER ou o servidor rejeita SHOW TRIGGERS.',
+      },
       mongodb: {
         srvTooltip:
           'Ative para conexões SRV do MongoDB Atlas (mongodb+srv://). Conexões SRV não precisam de porta.',
@@ -508,6 +520,13 @@ export const pt: typeof en = {
         excludeCollectionsPlaceholder: 'Nenhuma coleção ignorada',
         excludeCollectionsTooltip:
           'Nomes das coleções que ficam fora do backup. Você pode colar uma lista separada por vírgulas ou quebras de linha.',
+        skipGzip: 'Pular a compressão gzip (sem --gzip)',
+        skipGzipTooltip:
+          'Deixar o arquivo sem compressão. O backup é mais rápido e usa menos CPU, mas ocupa mais armazenamento.',
+        readFromSecondary:
+          'Ler de nós secundários (--readPreference=secondaryPreferred)',
+        readFromSecondaryTooltip:
+          'Ler os dados dos nós secundários para não sobrecarregar o nó primário. Requer um replica set.',
       },
     },
     show: {

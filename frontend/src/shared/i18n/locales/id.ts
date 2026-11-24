@@ -385,6 +385,7 @@ export const id: typeof en = {
       directConnection: 'Koneksi langsung',
       authDatabase: 'Database autentikasi',
       excludeCollections: 'Kecualikan collection',
+      dumpOptions: 'Parameter backup',
     },
     edit: {
       parseFromClipboard: 'Baca dari clipboard',
@@ -451,6 +452,17 @@ export const id: typeof en = {
         skipGaleraDisableTooltip:
           'Secara default, Databasus menjalankan SET SESSION wsrep_on=OFF saat restore untuk menghindari error ukuran writeset Galera. Ini membutuhkan hak akses SUPER. Aktifkan untuk melewatinya jika penyedia terkelola tidak mengizinkan SUPER. Restore berukuran besar mungkin kemudian mencapai batas writeset Galera.',
       },
+      mysql: {
+        skipEvents: 'Lewati event (--skip-events)',
+        skipEventsTooltip:
+          'Jangan meng-backup event terjadwal. Aktifkan untuk server kompatibel MySQL yang tidak mendukung SHOW EVENTS, seperti OceanBase.',
+        skipRoutines: 'Lewati routine (--skip-routines)',
+        skipRoutinesTooltip:
+          'Jangan meng-backup prosedur tersimpan dan fungsi. Aktifkan saat server menolak kueri metadata routine.',
+        skipTriggers: 'Lewati trigger (--skip-triggers)',
+        skipTriggersTooltip:
+          'Jangan meng-backup trigger. Aktifkan saat peran backup tidak memiliki hak akses TRIGGER atau server menolak SHOW TRIGGERS.',
+      },
       mongodb: {
         srvTooltip:
           'Aktifkan untuk koneksi SRV MongoDB Atlas (mongodb+srv://). Koneksi SRV tidak membutuhkan port.',
@@ -463,6 +475,13 @@ export const id: typeof en = {
         excludeCollectionsPlaceholder: 'Tidak ada collection yang dikecualikan',
         excludeCollectionsTooltip:
           'Nama collection yang dikecualikan dari backup. Tempel daftar yang dipisahkan dengan koma atau baris baru.',
+        skipGzip: 'Lewati kompresi gzip (tanpa --gzip)',
+        skipGzipTooltip:
+          'Biarkan arsip tidak terkompresi. Backup lebih cepat dan menggunakan lebih sedikit CPU, tetapi membutuhkan lebih banyak ruang.',
+        readFromSecondary:
+          'Baca dari node secondary (--readPreference=secondaryPreferred)',
+        readFromSecondaryTooltip:
+          'Membaca data dari node secondary agar tidak membebani node primary. Membutuhkan replica set.',
       },
     },
     show: { galeraDisableSkipped: 'Lewati penonaktifan saat restore' },

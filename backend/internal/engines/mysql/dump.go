@@ -25,7 +25,13 @@ type DumpSpec struct {
 	// Privileges are the backup privileges the account holds; TRIGGER and EVENT decide whether
 	// triggers and events are dumped.
 	Privileges []string
-	Logger     *slog.Logger
+	// IsSkipEvents forces the dump to skip scheduled events even with the EVENT privilege.
+	IsSkipEvents bool
+	// IsSkipRoutines skips stored procedures and functions.
+	IsSkipRoutines bool
+	// IsSkipTriggers forces the dump to skip triggers even with the TRIGGER privilege.
+	IsSkipTriggers bool
+	Logger         *slog.Logger
 }
 
 // Dump writes the database as SQL into output until mysqldump exits.
@@ -56,7 +62,6 @@ func (s *Source) buildDumpArgs(spec DumpSpec) []string {
 		"--port=" + strconv.Itoa(s.settings.Port),
 		"--user=" + s.settings.Username,
 		"--single-transaction",
-		"--routines",
 		"--set-gtid-purged=OFF",
 		"--quick",
 		"--skip-add-locks",
@@ -67,16 +72,24 @@ func (s *Source) buildDumpArgs(spec DumpSpec) []string {
 		"--no-tablespaces",
 	}
 
+	if spec.IsSkipRoutines {
+		args = append(args, "--skip-routines")
+	} else {
+		args = append(args, "--routines")
+	}
+
 	// Triggers are on by default, so a role without the privilege has to be opted out explicitly
 	// or mysqldump fails on SHOW TRIGGERS instead of dumping without them.
-	if slices.Contains(spec.Privileges, "TRIGGER") {
+	if slices.Contains(spec.Privileges, "TRIGGER") && !spec.IsSkipTriggers {
 		args = append(args, "--triggers")
 	} else {
 		args = append(args, "--skip-triggers")
 	}
 
-	if slices.Contains(spec.Privileges, "EVENT") {
+	if slices.Contains(spec.Privileges, "EVENT") && !spec.IsSkipEvents {
 		args = append(args, "--events")
+	} else if spec.IsSkipEvents {
+		args = append(args, "--skip-events")
 	}
 
 	for _, excludedTable := range namelist.NormalizeUniqueNames(spec.ExcludeTables) {

@@ -90,7 +90,10 @@ type MysqlConnectionSettings struct {
 	Version       mysql.Version
 	ExcludeTables []string
 	// Privileges are the backup privileges the account held at the last save.
-	Privileges []string
+	Privileges     []string
+	IsSkipEvents   bool
+	IsSkipRoutines bool
+	IsSkipTriggers bool
 }
 
 func (MysqlConnectionSettings) GetType() Type {
@@ -116,10 +119,12 @@ func (MariadbConnectionSettings) GetType() Type {
 type MongodbConnectionSettings struct {
 	DatabaseID uuid.UUID
 	// Engine carries the password and the tunnel secrets in clear text.
-	Engine             mongodb.Settings
-	Version            mongodb.Version
-	ExcludeCollections []string
-	CPUCount           int
+	Engine              mongodb.Settings
+	Version             mongodb.Version
+	ExcludeCollections  []string
+	CPUCount            int
+	IsSkipGzip          bool
+	IsReadFromSecondary bool
 }
 
 func (MongodbConnectionSettings) GetType() Type {

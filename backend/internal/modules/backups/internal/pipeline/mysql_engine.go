@@ -112,10 +112,13 @@ func openMysqlDumpSource(
 	return &mysqlDumpSource{
 		tunnel: tunnel,
 		spec: mysql_engine.DumpSpec{
-			Version:       connectionSettings.Version,
-			ExcludeTables: connectionSettings.ExcludeTables,
-			Privileges:    connectionSettings.Privileges,
-			Logger:        logger,
+			Version:        connectionSettings.Version,
+			ExcludeTables:  connectionSettings.ExcludeTables,
+			Privileges:     connectionSettings.Privileges,
+			IsSkipEvents:   connectionSettings.IsSkipEvents,
+			IsSkipRoutines: connectionSettings.IsSkipRoutines,
+			IsSkipTriggers: connectionSettings.IsSkipTriggers,
+			Logger:         logger,
 		},
 		logger: logger,
 	}, nil

@@ -22,6 +22,12 @@ type Settings struct {
 	ExcludeTables []string
 	// Privileges are the backup privileges the account held at the last save.
 	Privileges []string
+	// IsSkipEvents keeps mysqldump from running SHOW EVENTS, for servers without event support.
+	IsSkipEvents bool
+	// IsSkipRoutines keeps mysqldump from dumping stored procedures and functions.
+	IsSkipRoutines bool
+	// IsSkipTriggers keeps mysqldump from running SHOW TRIGGERS.
+	IsSkipTriggers bool
 }
 
 func (Settings) GetType() providers.Type {

@@ -41,6 +41,27 @@ func TestDump(t *testing.T) {
 		}, mongodump.GetLastArgs(t))
 	})
 
+	t.Run("skips gzip and reads from secondary when the dump options demand it", func(t *testing.T) {
+		t.Parallel()
+		clientTools := ClientTools{Root: t.TempDir()}
+		mongodump := toolstub.Write(t, clientTools.GetExecutable(ExecutableMongodump), toolstub.Spec{
+			IsReadingStdin: false,
+		})
+
+		err := newStubSource("orders").Dump(t.Context(), DumpSpec{
+			ClientTools:         clientTools,
+			ParallelCollections: 1,
+			IsSkipGzip:          true,
+			IsReadFromSecondary: true,
+			Logger:              slog.New(slog.DiscardHandler),
+		}, &bytes.Buffer{})
+
+		require.NoError(t, err)
+		lastArgs := mongodump.GetLastArgs(t)
+		assert.Contains(t, lastArgs, "--readPreference=secondaryPreferred")
+		assert.NotContains(t, lastArgs, "--gzip")
+	})
+
 	t.Run("logs the mongodump command without the password from the URI", func(t *testing.T) {
 		t.Parallel()
 		clientTools := ClientTools{Root: t.TempDir()}

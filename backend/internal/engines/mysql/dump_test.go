@@ -48,8 +48,8 @@ func TestDump(t *testing.T) {
 			assert.Equal(t, []string{
 				"--compression-algorithms=zstd", "--zstd-compression-level=5",
 				"--host=db.example.com", "--port=3306", "--user=backup_user",
-				"--single-transaction", "--routines", "--set-gtid-purged=OFF", "--quick", "--skip-add-locks",
-				"--verbose", "--no-tablespaces",
+				"--single-transaction", "--set-gtid-purged=OFF", "--quick", "--skip-add-locks",
+				"--verbose", "--no-tablespaces", "--routines",
 				"--triggers", "--events",
 				"--ignore-table=orders.audit_log",
 				"--max-allowed-packet=1G", "--ssl-mode=DISABLED",
@@ -88,6 +88,29 @@ func TestDump(t *testing.T) {
 		require.NoError(t, err)
 		assert.Contains(t, stubs.mysqldump.GetLastArgs(t), "--skip-triggers")
 		assert.NotContains(t, stubs.mysqldump.GetLastArgs(t), "--events")
+	})
+
+	t.Run("skips events, routines and triggers when the dump options demand it", func(t *testing.T) {
+		t.Parallel()
+		clientTools, stubs := writeStubClientTools(t, Version80, toolstub.Spec{})
+
+		err := newStubSource(clientTools, false).Dump(t.Context(), DumpSpec{
+			Version:        Version80,
+			Privileges:     []string{"SELECT", "TRIGGER", "EVENT"},
+			IsSkipEvents:   true,
+			IsSkipRoutines: true,
+			IsSkipTriggers: true,
+			Logger:         slog.New(slog.DiscardHandler),
+		}, &bytes.Buffer{})
+
+		require.NoError(t, err)
+		lastArgs := stubs.mysqldump.GetLastArgs(t)
+		assert.Contains(t, lastArgs, "--skip-events")
+		assert.Contains(t, lastArgs, "--skip-routines")
+		assert.Contains(t, lastArgs, "--skip-triggers")
+		assert.NotContains(t, lastArgs, "--events")
+		assert.NotContains(t, lastArgs, "--routines")
+		assert.NotContains(t, lastArgs, "--triggers")
 	})
 
 	t.Run("falls back to zlib when the server rejects zstd", func(t *testing.T) {

@@ -2870,6 +2870,12 @@ export interface components {
             sshTunnel: components["schemas"]["SshTunnelSettings"];
             /** @description The tables the dump leaves out */
             excludeTables: string[];
+            /** @description Whether the dump skips the scheduled events */
+            isSkipEvents: boolean;
+            /** @description Whether the dump skips stored procedures and functions */
+            isSkipRoutines: boolean;
+            /** @description Whether the dump skips triggers */
+            isSkipTriggers: boolean;
             /** @description The backup privileges the user held at the last save */
             readonly privileges?: string[];
         };
@@ -2944,6 +2950,10 @@ export interface components {
             sshTunnel: components["schemas"]["SshTunnelSettings"];
             /** @description The collections the dump leaves out */
             excludeCollections: string[];
+            /** @description Whether the archive is left uncompressed */
+            isSkipGzip: boolean;
+            /** @description Whether the dump reads from secondary nodes */
+            isReadFromSecondary: boolean;
         };
         /**
          * @description A processor architecture used by installed agents
