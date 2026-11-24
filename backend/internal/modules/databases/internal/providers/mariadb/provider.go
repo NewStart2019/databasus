@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	mariadbengine "databasus-backend/internal/engines/mariadb"
+	"databasus-backend/internal/engines/mysqlfamily"
 	"databasus-backend/internal/lib/crypto"
 	"databasus-backend/internal/modules/databases/internal/providers"
 )
@@ -63,6 +64,16 @@ func (p *Provider) Validate(settings providers.Settings) error {
 		return providers.NewInvalidSettingError("username", "is required")
 	case mariadbSettings.Password == "":
 		return providers.NewInvalidSettingError("password", "is required")
+	}
+
+	err = providers.ValidateMysqlFamilyConnectionValues(mysqlfamily.ConnectionValues{
+		Host:     mariadbSettings.Host,
+		Username: mariadbSettings.Username,
+		Password: mariadbSettings.Password,
+		Database: mariadbSettings.Database,
+	})
+	if err != nil {
+		return err
 	}
 
 	return providers.ValidateSSHTunnel(mariadbSettings.SSHTunnel)
@@ -139,6 +150,12 @@ func (p *Provider) GetTelemetryFacts(settings providers.Settings) (providers.Tel
 		PhysicalBackupType: "",
 		IsSSHTunnelEnabled: mariadbSettings.SSHTunnel.IsEnabled,
 	}, nil
+}
+
+func (p *Provider) IsNeonHost(settings providers.Settings) (bool, error) {
+	_, err := providers.CastSettings[Settings](settings)
+
+	return false, err
 }
 
 func (p *Provider) GetConnectionSettings(

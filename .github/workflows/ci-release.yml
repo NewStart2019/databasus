@@ -256,7 +256,9 @@ jobs:
   test-frontend-browser-ui:
     name: test-frontend-browser-ui (${{ matrix.arch }}, ${{ matrix.shard }}/3)
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 20
+    # An arm64 shard takes 7 to 14 minutes; a slow runner instance once needed four times as long
+    # for the runner's own checks before the first test.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -797,8 +799,16 @@ jobs:
           # Ryuk stays disabled to match scripts/test.sh, so CI and local runs share one code path.
           TESTCONTAINERS_RYUK_DISABLED: 'true'
           TEST_GROUP: ${{ matrix.group }}
+          TEST_NEON_DATABASE_URL: ${{ matrix.group == 'logical' && secrets.TEST_NEON_DATABASE_URL || '' }}
+          TEST_IS_NEON_REQUIRED: ${{ matrix.group == 'logical' && 'true' || '' }}
+          TEST_NEON_S3_ENDPOINT: ${{ matrix.group == 'storage-providers' && secrets.TEST_NEON_S3_ENDPOINT || '' }}
+          TEST_NEON_S3_REGION: ${{ matrix.group == 'storage-providers' && secrets.TEST_NEON_S3_REGION || '' }}
+          TEST_NEON_S3_BUCKET: ${{ matrix.group == 'storage-providers' && secrets.TEST_NEON_S3_BUCKET || '' }}
+          TEST_NEON_S3_ACCESS_KEY: ${{ matrix.group == 'storage-providers' && secrets.TEST_NEON_S3_ACCESS_KEY || '' }}
+          TEST_NEON_S3_SECRET_KEY: ${{ matrix.group == 'storage-providers' && secrets.TEST_NEON_S3_SECRET_KEY || '' }}
+          TEST_IS_NEON_S3_REQUIRED: ${{ matrix.group == 'storage-providers' && 'true' || '' }}
           # Groups with several container-heavy binaries bound each binary's concurrency.
-          # The dedicated CNPG branch uses its runner's default instead.
+          # The dedicated CNPG branch sets its own limit.
           TEST_PARALLELISM: '2'
         run: |
           cd backend
@@ -824,9 +834,12 @@ jobs:
             exit
           fi
           if [[ "$TEST_GROUP" == cnpg-* ]]; then
-            # CNPG shards use the runner's default parallelism on their measured 8-vCPU budget.
+            # Four scenarios at once keep an 8-vCPU runner to about four k3s containers. With one
+            # scenario per vCPU, a shard whose fixture tests start their own k3s beside the pool ran
+            # eight: on arm64 CPU pressure reached 72%, k3s startups passed their limit and a pooled
+            # k3s stopped under its scenarios.
             # shellcheck disable=SC2086 # one import path per word
-            go test -race -p=8 -count=1 -failfast -timeout 40m ${run_pattern:+-run "$run_pattern"} $packages
+            go test -race -p=8 -parallel=4 -count=1 -failfast -timeout 40m ${run_pattern:+-run "$run_pattern"} $packages
             exit
           fi
           # Each leg runs one group on its own runner and allows extra time for CI contention.

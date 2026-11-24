@@ -98,19 +98,24 @@ The storages of a workspace SHALL be listed in pages, ordered by name and then b
 - **WHEN** a workspace has three storages named `b`, `a` and `c`, and a member lists them two per page
 - **THEN** the first page holds `a` and `b` and points to a next page, and the next page holds `c` and points to none
 
-### Requirement: A connection test reports its outcome and changes nothing
+### Requirement: A connection test only reports its outcome
 
-Testing a saved storage SHALL run its provider's connection check with the stored settings, and SHALL answer `200` with the outcome: connected, or not connected together with the error the storage gave. Each provider keeps the check it runs today: it connects with the settings and reaches the configured location, and the S3 and Azure Blob providers also write a probe object there and remove it. A viewer of the workspace SHALL be allowed to test a saved storage. A test SHALL change nothing in the saved storage, its secrets included.
+Testing a saved storage SHALL run its provider's connection check with the stored settings, and SHALL answer `200` with the outcome: connected, or not connected together with the error the storage gave. Each provider SHALL keep its existing check; the S3 and Azure Blob providers also write a probe object and remove it. A viewer of the workspace SHALL be allowed to test a saved storage. A test SHALL change nothing in the saved storage, its secrets included. A storage recovered from a Databasus backup SHALL be tested like any other storage, and the test SHALL NOT be a precondition for using it.
 
 #### Scenario: Test of a working storage
 
 - **WHEN** a viewer tests a saved local storage whose folders are writable
-- **THEN** the response is `200` and reports the storage as connected
+- **THEN** the response is `200` and reports the storage as connected without changing the saved storage
 
 #### Scenario: Test of a storage that refuses the write
 
 - **WHEN** a member tests a saved S3 storage whose bucket does not exist
 - **THEN** the response is `200` and reports the storage as not connected with an error that names the missing bucket
+
+#### Scenario: Test of a recovered local storage
+
+- **WHEN** an editor tests a local storage right after a Databasus recovery
+- **THEN** the response reports the outcome of the ordinary check and no column of the storage changes
 
 ### Requirement: Unsaved settings can be tested before saving
 
@@ -158,17 +163,38 @@ Testing unsaved storage settings SHALL need the right to change the workspace's 
 
 ### Requirement: A storage that backups use cannot be deleted
 
-Deleting a storage that a backup config uses or that still holds backups SHALL get `409` with `code` `in_use` and SHALL change nothing, as the `storage-file-cleanup` spec describes. Deleting an otherwise unused storage SHALL follow the pending-cleanup acknowledgement rules of `storage-file-cleanup`: queued files require explicit abandonment, and successful deletion answers 204. Abandonment SHALL NOT override retained references.
+After ordinary authorization, deletion SHALL check an active Databasus backup destination before database-backup references or outstanding cleanup. Deleting a selected Databasus backup destination SHALL get 409 with code `databasus_backup_in_use` and SHALL change nothing, including when it is also used by database backups. Its interface SHALL explain that root admin must first remove it from the Databasus backups section; root admin SHALL get a direct route to that section. If no Databasus backup destination selects the storage, a database backup config or retained database backup reference SHALL instead cause 409 with code `in_use`. This ordering SHALL hold against concurrent selection and deletion. Removing a Databasus backup selection SHALL not delete existing archives; Databasus backup history alone SHALL not prevent later deletion of an otherwise unused storage and SHALL become unavailable history when that storage is deleted. Deleting an otherwise unused storage SHALL follow the pending-cleanup acknowledgement rules of `storage-file-cleanup`: queued files require explicit abandonment, and successful deletion answers 204. Abandonment SHALL NOT override retained references or an active Databasus backup selection.
 
 #### Scenario: Storage used by a backup config
 
-- **WHEN** a member deletes a storage that the backup config of a database of the workspace uses
+- **WHEN** a member deletes a storage that the backup config of a database of the workspace uses and that is not a selected Databasus backup destination
 - **THEN** the response is `409` with `code` `in_use`, and the storage is still listed
 
 #### Scenario: Unused storage
 
 - **WHEN** a member deletes a storage that nothing references and that has no pending file deletion
 - **THEN** the response is `204`, and the storage is no longer listed
+
+#### Scenario: Selected Databasus backup destination
+
+- **WHEN** an authorized storage editor deletes a selected Databasus backup destination
+- **THEN** deletion gets 409 with code `databasus_backup_in_use` and the interface explains that root admin must first deselect it in global settings
+
+#### Scenario: Storage has both database and Databasus backup uses
+
+- **WHEN** an authorized editor deletes a selected Databasus backup destination that also has a database backup config, retained database backups and pending cleanup
+- **THEN** the response is 409 with code `databasus_backup_in_use` regardless of cleanup abandonment and nothing changes
+- **AND** after deselection, another deletion attempt still gets `in_use` while the database-backup references remain
+
+#### Scenario: Deletion races destination selection
+
+- **WHEN** selecting a storage for Databasus backups overlaps its deletion
+- **THEN** either selection succeeds and deletion is refused, or deletion succeeds and selection is refused without changing the previous configuration
+
+#### Scenario: Databasus backup history remains after deselection
+
+- **WHEN** root admin deselects a storage and an authorized editor later deletes it with no other blocking references or cleanup
+- **THEN** deletion succeeds, existing Databasus backup objects are not automatically erased and the Databasus backup history no longer offers that storage as accessible
 
 ### Requirement: A storage moves to another workspace only with its databases
 
@@ -203,9 +229,11 @@ Upgrading Databasus SHALL keep every stored secret of every supported storage as
 - **WHEN** an instance has an S3 storage with encrypted keys and an SFTP storage with an encrypted private key, and it is upgraded to this release
 - **THEN** all stored values are unchanged, and a connection test of the S3 storage authenticates with the keys saved before the upgrade
 
-### Requirement: Stored secrets stay encrypted
+### Requirement: Storage secrets stay encrypted and untouched by tests
 
 Every secret of a storage SHALL be stored encrypted with the instance's master key, whether it was entered by the user or produced by the backend. No operation SHALL write a storage's secret to the database in clear text.
+
+Connection tests SHALL preserve all saved settings and secrets, including their encrypted representations. They SHALL NOT persist credentials changed in memory during a probe or rewrite any storage or provider-settings column.
 
 #### Scenario: Connection test writes nothing
 
@@ -556,3 +584,126 @@ Every repeat after a temporary refusal SHALL produce a warning in the applicatio
 
 - **WHEN** an upload to an S3 storage with an access key and a secret key repeats a refused piece
 - **THEN** neither key nor the request signature appears in the warning
+
+### Requirement: Databasus backup selection does not elevate storage edit or transfer restrictions
+
+Selecting a storage for Databasus backups SHALL NOT change the ordinary permissions or validation for editing its name, address or credentials, or transferring it between workspaces. Selection SHALL remain a reference to the same storage and SHALL follow a permitted transfer. Only root admin SHALL change the Databasus backup selection; a workspace editor SHALL NOT gain access to the full Databasus backup file or key through the Databasus API. The choice of shared workspace membership and the external storage account SHALL remain the owner's responsibility.
+
+#### Scenario: Workspace editor changes a selected storage
+
+- **WHEN** an ordinary authorized workspace editor submits a valid settings change for a selected Databasus backup storage
+- **THEN** the ordinary update succeeds and the next Databasus backup uses its current settings
+
+### Requirement: S3 objects stay within 5 GiB
+
+Every object Databasus writes to an S3 storage SHALL be no larger than 5 GiB (5 × 1024³ bytes), whatever the size of the saved file and whichever S3-compatible provider holds the bucket. A file larger than that SHALL be stored as several objects described by a manifest, as large files already are. Files saved before this rule, whose objects may be larger, SHALL still read back intact and delete completely.
+
+#### Scenario: A large backup is saved
+
+- **WHEN** a backup of about 12 GiB is saved to an S3 storage
+- **THEN** it is stored as several objects, none larger than 5 GiB, and reads back byte for byte
+
+#### Scenario: A file saved with larger objects is read
+
+- **WHEN** a member restores a backup that an earlier version stored as one object of about 15 GiB
+- **THEN** the restore reads it back intact, and deleting the backup removes all its objects
+
+### Requirement: Neon Object Storage is offered as an S3 storage choice
+
+The storage type list of the storage form SHALL offer Neon Object Storage next to the storage types. Choosing it SHALL create an ordinary S3 storage: the saved storage's type SHALL be S3 and its settings SHALL be S3 settings, with path-style addressing and no storage class unless the member sets them. The Neon choice SHALL show the S3 fields with Neon examples, an endpoint of the form `https://br-<branch>.storage.<cell>.<region>.aws.neon.tech` and the region `us-east-2`, and a link to the Neon Object Storage guide in the interface language. Switching a new storage between S3 and Neon Object Storage SHALL keep the values already entered.
+
+#### Scenario: Creating a Neon Object Storage storage
+
+- **WHEN** a member chooses Neon Object Storage, fills the bucket, region, keys and a Neon endpoint, and saves
+- **THEN** the saved storage has type S3 with exactly those settings, path-style addressing and no storage class
+
+#### Scenario: Neon examples are shown
+
+- **WHEN** a member chooses Neon Object Storage for a new storage
+- **THEN** the empty endpoint and region fields show the Neon endpoint form and `us-east-2` as examples
+
+#### Scenario: Switching between S3 and Neon
+
+- **WHEN** a member enters a bucket under S3 and then chooses Neon Object Storage
+- **THEN** the bucket stays filled
+
+#### Scenario: The guide is linked
+
+- **WHEN** a member views the Neon Object Storage form in Russian
+- **THEN** the form links to the Russian page of the Neon Object Storage guide
+
+### Requirement: Neon credentials can be pasted from the clipboard
+
+The Neon Object Storage form SHALL offer to read the credentials block that Neon Console gives for object storage from the clipboard, above an "or enter the details manually" divider and the S3 fields. The block holds lines of the form `NAME="value"`, with or without quotes and with comment lines. Reading it SHALL fill the endpoint from `AWS_ENDPOINT_URL_S3`, the region from `AWS_REGION`, the access key from `AWS_ACCESS_KEY_ID` and the secret key from `AWS_SECRET_ACCESS_KEY`, and SHALL leave the bucket and the other fields as they were. A successful read SHALL confirm that the credentials were filled. When the block holds no endpoint at Neon, the form SHALL report that the text is not a Neon credentials block and change nothing. When the block lacks either key or holds a placeholder instead of it, the form SHALL fill what the block holds, leave that key's field as it was and warn that a credential has to be generated in Neon Console. When the browser does not offer the clipboard API, the form SHALL offer a field to paste the text into instead; when the API exists but reading is refused, the form SHALL report that the clipboard could not be read.
+
+#### Scenario: A complete block is pasted
+
+- **WHEN** a member pastes a block with a Neon endpoint, a region and both keys
+- **THEN** the endpoint, region, access key and secret key fields hold the block's values and the bucket field is unchanged
+
+#### Scenario: The block has no generated keys
+
+- **WHEN** a member pastes a block that holds the endpoint and the region but placeholders instead of the keys
+- **THEN** the endpoint and region are filled, both key fields are unchanged and the form warns that a credential has to be generated
+
+#### Scenario: Unrelated text is pasted
+
+- **WHEN** a member pastes text that holds no Neon endpoint
+- **THEN** the form reports that the text is not a Neon credentials block and every field is unchanged
+
+#### Scenario: The clipboard API is unavailable
+
+- **WHEN** the browser does not offer the clipboard API and the member pastes the block into the offered field
+- **THEN** the fields are filled as if the clipboard had been read
+
+#### Scenario: Reading the clipboard is refused
+
+- **WHEN** the browser offers the clipboard API but refuses to read it
+- **THEN** the form reports that the clipboard could not be read and every field is unchanged
+
+### Requirement: Pasted Neon credentials stay in the form
+
+Reading the Neon credentials block SHALL happen in the browser and SHALL send no request; the credentials SHALL leave the browser only when the member tests or saves the storage, as any typed credential does. The secret key SHALL stay masked in its field after the paste, and no notification or error message SHALL show either key's value.
+
+#### Scenario: A block is pasted
+
+- **WHEN** a member pastes a complete Neon credentials block
+- **THEN** no request is sent, the secret key field is masked, and the confirmation names no key value
+
+### Requirement: A saved Neon Object Storage storage opens with the Neon form
+
+When a member opens a saved S3 storage whose endpoint host is `neon.tech` or ends with `.neon.tech`, the form SHALL show the Neon credentials paste and the Neon guide link, as for a new Neon Object Storage storage. The storage's type SHALL still show as S3. A saved S3 storage with any other endpoint, or without one, SHALL open with the plain S3 form.
+
+#### Scenario: Opening a Neon storage
+
+- **WHEN** a member opens a saved S3 storage whose endpoint is `https://br-example.storage.c-9.us-east-2.aws.neon.tech`
+- **THEN** the form shows the Neon credentials paste and the Neon guide link
+
+#### Scenario: Opening another S3 storage
+
+- **WHEN** a member opens a saved S3 storage whose endpoint is at Cloudflare R2
+- **THEN** the form shows the plain S3 fields without the Neon paste
+
+### Requirement: Public materials describe Neon Object Storage setup
+
+The website SHALL publish a Neon Object Storage guide at `/storages/neon-object-storage` in every supported language. The guide SHALL walk through creating a bucket and a credential in Neon Console and adding the storage in Databasus, with screenshots, in plain steps without S3 protocol details, and SHALL advise keeping backups in a different Neon project than the databases they protect, because deleting a project removes both. Its title, description and headings SHALL target the search phrasing for backing up to Neon Object Storage in each language, and the page SHALL carry step-by-step structured data that matches its visible steps. The storages page, the documentation navigation, the Neon database guide, the sitemap, the language alternates and the machine-readable page listing SHALL link to it. The README in every supported language SHALL name Neon Object Storage as plain text, without a link, at the end of its list of cloud storage destinations, after Cloudflare R2.
+
+#### Scenario: Reading the guide in any language
+
+- **WHEN** a reader opens `/storages/neon-object-storage` or its translated page in any supported language
+- **THEN** the page shows the setup steps with screenshots in that language
+
+#### Scenario: A machine reads the guide
+
+- **WHEN** a search engine or answer engine reads the page
+- **THEN** it finds a translated title and description, language alternates for every locale, and step-by-step structured data whose steps match the visible text
+
+#### Scenario: Finding the guide
+
+- **WHEN** a reader opens the storages page, the documentation navigation, the Neon database guide, the sitemap or the machine-readable page listing in any supported language
+- **THEN** each links to the Neon Object Storage guide
+
+#### Scenario: Reading the README
+
+- **WHEN** a reader opens the README in any supported language
+- **THEN** its cloud storage list ends with Cloudflare R2 and Neon Object Storage, named without a link

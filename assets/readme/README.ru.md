@@ -15,6 +15,9 @@
   [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey)](https://github.com/databasus/databasus)
   [![Self Hosted](https://img.shields.io/badge/self--hosted-yes-brightgreen)](https://github.com/databasus/databasus)
   [![Open Source](https://img.shields.io/badge/open%20source-❤️-red)](https://github.com/databasus/databasus)
+  <br />
+  [![Discord](https://img.shields.io/badge/Discord-join%20us-5865F2?logo=discord&logoColor=white)](https://databasus.com/discord)
+  [![Telegram](https://img.shields.io/badge/Telegram-join%20us-26A5E4?logo=telegram&logoColor=white)](https://t.me/databasus_community)
 
   <p>
     <a href="../../README.md">English</a> •
@@ -52,7 +55,7 @@
   - **Полные**: самодостаточная копия кластера целиком
   - **Инкрементальные**: хранят только изменения с прошлого полного бекапа, поэтому остаются маленькими и быстрыми
   - **Стриминг WAL**: непрерывно захватывает поток записи базы и дает Point-in-time recovery (PITR). Сделан для аварийного восстановления с почти нулевой потерей данных
-  - **Высокая доступность (HA)**: поддерживает смену timeline после переключения primary в кластерах Patroni и CloudNativePG (CNPG)
+  - **Высокая доступность (HA)**: поддерживает смену timeline после переключения primary в кластерах Patroni и CloudNativePG (CNPG) без разрывов: WAL и цепочка инкрементальных бекапов продолжаются на новом timeline
 - **Логические**: нативный дамп базы в бинарном формате конкретного движка (со сжатием, пригоден для параллельного восстановления)
 
 ### 🔄 **Бекапы по расписанию**
@@ -80,7 +83,7 @@ Databasus по-настоящему восстанавливает бекап, �
 ### 🗄️ **Разные хранилища** <a href="https://databasus.com/ru/storages/">(смотреть все)</a>
 
 - **Локальное хранилище**: держите бекапы на своем VPS или сервере
-- **Облачные хранилища**: S3, Cloudflare R2, Azure Blob Storage, NAS, FTP, SFTP и другие
+- **Облачные хранилища**: S3, Azure Blob Storage, NAS, FTP, SFTP, Cloudflare R2, Neon Object Storage и другие
 - **Безопасно**: все данные остаются под вашим контролем
 
 ### 📱 **Уведомления** <a href="https://databasus.com/ru/notifiers/">(смотреть все)</a>
@@ -117,6 +120,7 @@ Databasus по-настоящему восстанавливает бекап, �
 - **MySQL**: 5.7, 8.0, 8.4, 9 и 26 (только логические)
 - **MariaDB**: 5.5, 10, 11, 12 и 13 (только логические)
 - **MongoDB**: 4.2+, 5, 6, 7, 8 и 9 (только логические)
+- **Облачный PostgreSQL**: [Neon](https://databasus.com/ru/faq/neon/) и [Supabase](https://databasus.com/ru/faq/supabase/)
 
 ### 🐳 **Self-hosted и безопасно**
 
@@ -288,7 +292,15 @@ docker exec -it databasus ./main --create-user --email="ops@example.com" --passw
 
 ### 💾 Бекап самого Databasus
 
-После установки стоит еще и <a href="https://databasus.com/ru/faq/#backup-databasus">забекапить сам Databasus</a> или, как минимум, скопировать секретный ключ шифрования (это займет 30 секунд). Тогда вы сможете восстановиться из своих зашифрованных бекапов, даже если потеряете доступ к серверу с Databasus или он выйдет из строя.
+Databasus устроен так, чтобы его можно было восстановить, даже если его собственный сервер пропадет или выйдет из строя. Он умеет бекапить сам себя и помогает сохранить ключ:
+
+**Включите бекапы Databasus** в **Databasus settings → Databasus backups**. Тогда Databasus каждый час сохраняет зашифрованную копию своей внутренней базы в выбранные вами хранилища. Пока бекапы не включены, после добавления первой базы или первого хранилища вы будете видеть плавающее напоминание.
+
+**Сохраните мастер-ключ отдельно.** Databasus предложит скачать его при первом входе, а еще он хранится в файле `./databasus-data/secret.key`. Без него не расшифровать ни бекапы Databasus, ни бекапы ваших баз.
+
+Лучше выбрать удаленное хранилище, а не локальный диск на том же сервере.
+
+Подробнее — в [инструкции, как забекапить и восстановить Databasus](https://databasus.com/ru/faq/#backup-databasus).
 
 ---
 
@@ -302,7 +314,7 @@ docker exec -it databasus ./main --create-user --email="ops@example.com" --passw
 - **Тесты восстановления** проходят полный цикл создания бекапа и восстановления на настоящих контейнерах баз данных для каждой поддерживаемой СУБД и мажорной версии.
 - **Условия выпуска** требуют успешного прохождения тестов, сборок и проверок безопасности. Открытые критичные находки CodeQL в анализе релиза блокируют публикацию.
 
-Эти проверки дополняют регулярные аудиты Codex Security от OpenAI. Об уязвимостях сообщайте конфиденциально по [SECURITY.md](https://github.com/databasus/databasus?tab=security-ov-file#readme); такие сообщения мы разбираем в первую очередь.
+Эти проверки дополняют регулярные аудиты Codex Security от OpenAI. Об уязвимостях сообщайте конфиденциально по [SECURITY.md](https://github.com/databasus/databasus?tab=security-ov-file#readme); такие сообщения мы разбираем в первую очередь. Исправленные уязвимости мы публикуем как advisories, с CVE там, где он присвоен, на [странице Security репозитория](https://github.com/databasus/databasus/security).
 
 ---
 
@@ -312,4 +324,4 @@ docker exec -it databasus ./main --create-user --email="ops@example.com" --passw
 
 ## 💬 Сообщество
 
-Вступайте в наше большое сообщество разработчиков, DBA и DevOps-инженеров в Telegram: [@databasus_community](https://t.me/databasus_community).
+Вступайте в наше большое сообщество разработчиков, DBA и DevOps-инженеров. Общаемся в Telegram [@databasus_community](https://t.me/databasus_community) и в [Discord](https://databasus.com/discord).

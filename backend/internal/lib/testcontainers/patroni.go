@@ -73,7 +73,7 @@ func StartPatroni(t *testing.T, spec PatroniSpec) *Patroni {
 	labels := withTestRunLabel(t, map[string]string{LabelPatroniFixture: fixture.ID})
 	t.Logf("fixture %s creating network", fixture.ID)
 	var fixtureNetwork *testcontainers.DockerNetwork
-	err := WithFreeSubnet(func(ipam *dockernetwork.IPAM) error {
+	err := WithFreeSubnet(t.Context(), func(ipam *dockernetwork.IPAM) error {
 		var networkErr error
 		fixtureNetwork, networkErr = network.New(t.Context(), network.WithLabels(labels), network.WithIPAM(ipam))
 		return networkErr
@@ -376,6 +376,7 @@ frontend postgres
 backend primary
   option httpchk GET /primary
   http-check expect status 200
+  timeout check 2s
   default-server inter 200ms fall 1 rise 1 on-marked-down shutdown-sessions
   server node-a node-a:5432 check port %d
   server node-b node-b:5432 check port %d

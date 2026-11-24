@@ -31,9 +31,11 @@ export const WEBSITE_PAGES = {
   faqLocalhost: { path: 'faq/localhost', isTranslated: true },
   faqSupabase: { path: 'faq/supabase', isTranslated: true },
   storagesCloudflareR2: { path: 'storages/cloudflare-r2', isTranslated: true },
+  storagesNeonObjectStorage: { path: 'storages/neon-object-storage', isTranslated: true },
   notifiersSlack: { path: 'notifiers/slack', isTranslated: true },
   notifiersTeams: { path: 'notifiers/teams', isTranslated: true },
   notifiersMattermost: { path: 'notifiers/mattermost', isTranslated: false },
+  discord: { path: 'discord', isTranslated: false },
 } satisfies Record<string, WebsitePage>;
 
 type WebsitePageId = keyof typeof WEBSITE_PAGES;
